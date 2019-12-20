@@ -1,0 +1,26 @@
+
+module load bowtie2/2.2.3
+bowtie2 -q --phred33-quals -k 2 -x EL10byChromosome -1 R1.fastq -2 R2.fastq -S output.sam
+
+module load SAMTools/0.1.18 
+samtools view -b -S -o out.bam in.sam
+
+module load SAMTools/0.1.18 
+samtools sort out.bam out.sorted.bam
+
+module load SAMTools/0.1.18
+samtools merge out.merged.bam out.sorted.bam
+
+module load SAMTools/0.1.18 
+samtools mpileup -uf EL10byChromosome.fasta out.merged.bam | bcftools view -bvcg - > out.bcf
+
+module load SAMTools/0.1.18 
+bcftools view out.bcf | vcfutils.pl varFilter -D100 > out.vcf
+
+module load bcftools
+bcftools convert -o <out.vcf.gz> -O z <in.vcf>
+
+module load tabix
+tabix -p vcf out.vcf.gz
+
+bcftools merge CROPTYPE_FILES.vcf > CROPTYPE.vcf
