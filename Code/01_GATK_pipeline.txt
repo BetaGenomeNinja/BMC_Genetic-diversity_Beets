@@ -15,18 +15,34 @@ bowtie2 -q --phred33-quals -k 2 -x EL10byChromosome -1 R1.fastq -2 R2.fastq -S o
 module load picardtools                                                                                                                                                                              
 java -jar /opt/software/picardTools/1.113/AddOrReplaceReadGroups.jar I=${File}.bam O=${File}.out.bam RGLB=String RGPL=String RGPU=String RGSM=String
 
+2. SamSort.sh
+module load picardtools                                                                                                                                                                              
+java -jar /opt/software/picardTools/1.113/SortSam.jar I=${File}.out.bam O=${File}.out.sorted.bam SO=coordinate
 
+3. BamIndex.sh
+module load picardtools                                                                                                                                                                              
+java -jar /opt/software/picardTools/1.113/BuildBamIndex.jar I=$i O=$i'.bai';done
 
+4. GATK_HapC.sh
+module load GATK/2.5.2
+GATK -T HaplotypeCaller -R /mnt/scratch/galewski/CROP/50genomes/genome/EL10_chr_scaffold.fa -I ${File}.bam -o ${File}.vcf
 
+5. RA.sh
+module load GATK/2.5.2
+GATK -T RealignerTargetCreator -R ../genome/EL10_chr_scaffold.fa -I ${File} -o ${File}.intervals
 
+6. IRA.sh
+module load GATK/2.5.2
+GATK -T IndelRealigner -R ../genome/EL10_chr_scaffold.fa -I ${File}.bam  -known ${File}.vcf -targetIntervals ${File}.bam.intervals -o ${File}.bam.realigned.bam
 
+7. GATK_HapC.sh
+module load GATK/2.5.2
+GATK -T HaplotypeCaller -R /mnt/scratch/galewski/CROP/50genomes/genome/EL10_chr_scaffold.fa -I ${File}.bam -o ${File}.vcf
 
 8. Merge vcfs for crop types
 
 module load bcftools
 for i in $(ls *.vcf);do bcftools convert -o $i.gz -O z $i;done
 bcftools merge *.gz > ALL_PAT.vcf
-
 tabix -p vcf
-
-bcftools merge --force-samples *.gz > ALL_PAT.vcf
+bcftools merge --force-samples *.gz > CropType.vcf
