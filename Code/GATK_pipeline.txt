@@ -1,0 +1,32 @@
+
+
+GATK Pipeline
+
+1. RGadd.sh
+2. SamSort.sh
+3. BamIndex.sh
+4. GATK_HapC.sh
+5. RA.sh
+6. IRA.sh
+7. GATK_HapC.sh
+8. Merge vcfs for crop types
+
+1. RGadd.sh
+module load picardtools                                                                                                                                                                              
+java -jar /opt/software/picardTools/1.113/AddOrReplaceReadGroups.jar I=${File}.bam O=${File}.out.bam RGLB=String RGPL=String RGPU=String RGSM=String
+
+
+
+
+
+
+
+8. Merge vcfs for crop types
+
+module load bcftools
+for i in $(ls *.vcf);do bcftools convert -o $i.gz -O z $i;done
+bcftools merge *.gz > ALL_PAT.vcf
+
+tabix -p vcf
+
+bcftools merge --force-samples *.gz > ALL_PAT.vcf
