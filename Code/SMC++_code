@@ -1,1 +1,10 @@
-SMC++
+smc++ vcf2smc my.data.vcf.gz out/CropsType.smc.gz chr1 CropTypePop:S1,S2
+smc++ estimate -o analysis/ 1.25e-8
+smc++ plot plot.pdf analysis/model.final.json
+
+smc++ vcf2smc my.vcf.gz data/pop12.smc.gz <contig> pop1:ind1_1,ind1_2 pop2:ind2_1,ind2_2
+smc++ vcf2smc my.vcf.gz data/pop21.smc.gz <contig> pop2:ind2_1,ind2_2 pop1:ind1_1,ind1_2
+
+Finally, run split to refine the marginal estimates into an estimate of the joint demography:\
+smc++ split -o split/ pop1/model.final.json pop2/model.final.json data/*.smc.gz
+smc++ plot joint.pdf split/model.final.json
