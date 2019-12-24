@@ -1,1 +1,34 @@
+FASTQC
+
+module load FastQC
+fastqc -f fastq -noextract ${File}
+
+module load FASTX
+fastx_trimmer -Q33 -f 10 -l 70 -i ${File} -o ${File}_trimmed
+
+/opt/software/cutadapt/1.2.1--GCC-4.4.5/src/bin/cutadapt $(</mnt/scratch/galewski/1_RNASeq/adapters) -f fastq -m 30 -q 10 -o ${File}_cutadapt ${File} > ${File}_cutadapt.log
+
+fastq_quality_filter -Q33 -q 10 -p 100 -i ${File} -o ${File}_quality
+
+fastx_artifacts_filter -Q33 -v -i ${File} -o ${File}_artifact
+
+fastqc -f fastq -noextract ${File}
+
+fastx_trimmer -Q33 -f 10 -l 70 -i ${File} -o ${File}_trimmed
+
+/opt/software/cutadapt/1.2.1--GCC-4.4.5/src/bin/cutadapt $(</mnt/scratch/galewski/1_RNASeq/adapters) -f fastq -m 30 -q 10 -o ${File}_cutadapt ${File} > ${File}_cutadapt.log
+
+fastq_quality_filter -Q33 -q 10 -p 100 -i ${File} -o ${File}_quality
+
+fastx_artifacts_filter -Q33 -v -i ${File} -o ${File}_artifact
+
+fastqc -f fastq -noextract ${File}
+
+
+
+
+
+TRIMMOMATIC
+
+java -jar $TRIM/trimmomatic PE ${File}_R1_001.fastq.gz ${File}_R2_001.fastq.gz ${File}_R1_pe.fastq ${File}_R1_se.fastq ${File}_R2_pe.fastq ${File}_R2_se.fastq ILLUMINACLIP:/mnt/scratch/galewski/CROP/CT_EL_SR_PAT_genomes/admera_adapters.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
 
