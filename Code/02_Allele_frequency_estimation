@@ -28,6 +28,9 @@ python filter_space.py ALL.pileup.col1 ${File} > ${File}.out2
 for i in $(ls *ut.out1);do awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' $i > $i'.allel.freq';done
 
 ############
+CODE
+############
+filter.py
 filter_SNP_biallelic.py
 2_filter_ALL.py
 1_filter.py
