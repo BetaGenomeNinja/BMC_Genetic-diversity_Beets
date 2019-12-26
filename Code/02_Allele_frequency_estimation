@@ -1,21 +1,24 @@
-module load bcftools
+
 bcftools convert -o <output.vcf.gz> -O z <input.vcf>
-module load tabix
+
 tabix -p vcf in.vcf.gz
+
 bcftools merge CROPTYPE_FILES > CROPTYPE.vcf
 
 for i in $(ls);do bcftools convert -o $i.gz -O z $i;done
 
 cat ALL.vcf | grep -v IND > ALL.SNP.vcf
-cat ALL.SNP.vcf | awk '$6 > 20' > ALL.SNP_1.vcf
 
+cat ALL.SNP.vcf | awk '$6 > 20' > ALL.SNP_1.vcf
 
 python filter_SNP_biallelic.py ALL.SNP_1.vcf > ALL.SNP_2.vcf
 
 python filter.py ALL.SNP_2.vcf CROP.all.pileup > CROP.all.pileup.out
 
 ls *all.pileup.out > list.pileup.out
+
 python 2_filter_ALL.py ALL.SNP_2.vcf list.pileup.out > ALL.pileup.col
+
 cat ALL.pileup.col | sed 's/XX,/ /g' | sed 's/XX//g' > ALL.pileup.col1
 
 python 1_filter.py ${File} > ${File}.out1
@@ -31,8 +34,9 @@ filter_SNP_biallelic.py
 filter_space.py
 ############
 
-#############
-#filter.py 
+###############
+filter.py
+###############
 import sys
 import os
 import time
@@ -72,7 +76,121 @@ for i in fileinput.input(sys.argv[2]):
 			if float(j[8].count('.')+j[8].count(',')) > 0:
 				freq = float(j[8].count('.')+j[8].count(','))/float(j[7])
 			print j[0],j[1],j[2],j[3],j[7],j[8].count('.'),j[8].count(','),j[8].count('.')+j[8].count(','),freq,j[8],j[9][0:-1]
+
+
 ###############
+2_filter_ALL.py
+###############
+import sys
+import os
+import time
+import subprocess
+import fileinput
+dir = os.getcwd()
+
+File1 = open(sys.argv[1],"r")
+File2 = open(sys.argv[2],"r")
+
+readfile1 = File1.readlines()
+readfile2 = File2.readlines()
+
+dict = {}
+dict1 = {}
+n = 0
+n1 = 0
+for i in readfile1:
+	if 'INDEL' and '#' not in i:
+                j = i.split('\t')
+                line4 = str(j[0])
+                line5 = str(j[1])
+                line8 = str(line4+'XX,'+line5+'XX')
+                #s.add(line8)
+		key = line8
+                value = 'yes'
+                dict[key] = value	
+	          
+#for i in readfile2:
+	#n = n + 1
+	#print n
+    
+for i in readfile2:
+	dict1 = {}
+	n1 = n1 + 1
+        for k in fileinput.input(i[0:-1]):
+                j = k.split(' ')
+                line4 = str(j[0])
+                line5 = str(j[1])
+                line8 = str(line4+'XX,'+line5+'XX')
+                if line8 in dict:
+			key = line8
+                	value = 'yes'
+                	dict1[key] = value
+	
+		#for k in dict1:
+		#	print n1,k
+	dict = dict1
+for k in dict1:
+	print k
+	
+#################
+1_filter.py
+#################
+import sys
+import os
+import time
+import subprocess
+import fileinput
+dir = os.getcwd()
+
+File1 = open(sys.argv[1],"r")
+#File2 = open(sys.argv[2],"r")
+
+readfile1 = File1.readlines()
+#readfile2 = File2.readlines()
+
+s=set()
+
+for i in readfile1:
+	j = i.split(' ')
+	if int(j[4]) > 15:
+		print i[0:-1]
+
+#################
+filter_space.py
+#################
+
+import sys
+import os
+import time
+import subprocess
+import fileinput
+
+## USAGE
+## python filter_space.py .col .pileup
 
 
+dir = os.getcwd()
 
+File1 = open(sys.argv[1],"r")
+File2 = sys.argv[2]
+
+readfile1 = File1.readlines()
+
+s=set()
+dict = {}
+
+for i in readfile1:
+		j = i.split(' ')
+		line4 = str(j[0])
+		line5 = str(j[1][0:-1])
+		line6 = str(line4+','+line5)
+		#print j
+		s.add(line6)
+
+for n in fileinput.input(File2):
+			j = n.split(' ')
+			line7 = str(j[0])
+        		line8 = str(j[1])
+        		line9 = str(line7+','+line8)	   
+			if line9 in s:
+				print n[0:-1]
