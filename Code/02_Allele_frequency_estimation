@@ -38,6 +38,28 @@ filter_space.py
 ############
 
 ###############
+filter_SNP_biallelic.py
+###############
+
+import sys
+import os
+import time
+import subprocess
+import fileinput
+dir = os.getcwd()
+
+File1 = open(sys.argv[1],"r")
+
+readfile1 = File1.readlines()
+seq = ['A','T','G','C']
+
+for i in readfile1:
+	if '#' not in i:
+	        j = i.split('\t')
+		if j[3] and j[4] in seq:
+			print i[0:-1]
+
+###############
 filter.py
 ###############
 import sys
