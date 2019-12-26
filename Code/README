@@ -1,1 +1,21 @@
-##README
+##README##
+Code used in the following manuscript (GICS-D-19-01632R1):
+
+Genetic diversity among cultivated beets (Beta vulgaris) assessed via population-based whole genome sequences
+Paul J. Galewski; J. Mitchell McGrath, Ph.D.
+BMC Genomics (GICS-D-19-01632R1)
+
+Naming conventions of code reflect order of opperations. 
+
+00 - Quality Control
+01 - Alignment of raw data
+02 - Varient Calling (bcftools and GATK)
+03 - Analysis of key files
+
+Raw data is located in the BioProject  PRJNA563463 (population whole genome sequences) and PRJNA413079 (EL10 genome assembly) 
+
+Files used as inputs are available at (https://doi.org/10.5061/dryad.sbcc2fr2t) and include:
+VCF file generated using bcftools
+VCF file generated using GATK
+Allele frequency matrix
+
