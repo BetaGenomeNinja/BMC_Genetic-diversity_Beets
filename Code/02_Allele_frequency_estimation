@@ -1,1 +1,78 @@
+module load bcftools
+bcftools convert -o <output.vcf.gz> -O z <input.vcf>
+module load tabix
+tabix -p vcf in.vcf.gz
+bcftools merge CROPTYPE_FILES > CROPTYPE.vcf
+
+for i in $(ls);do bcftools convert -o $i.gz -O z $i;done
+
+cat ALL.vcf | grep -v IND > ALL.SNP.vcf
+cat ALL.SNP.vcf | awk '$6 > 20' > ALL.SNP_1.vcf
+
+
+python filter_SNP_biallelic.py ALL.SNP_1.vcf > ALL.SNP_2.vcf
+
+python filter.py ALL.SNP_2.vcf CROP.all.pileup > CROP.all.pileup.out
+
+ls *all.pileup.out > list.pileup.out
+python 2_filter_ALL.py ALL.SNP_2.vcf list.pileup.out > ALL.pileup.col
+cat ALL.pileup.col | sed 's/XX,/ /g' | sed 's/XX//g' > ALL.pileup.col1
+
+python 1_filter.py ${File} > ${File}.out1
+
+python filter_space.py ALL.pileup.col1 ${File} > ${File}.out2
+
+for i in $(ls *ut.out1);do awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' $i > $i'.allel.freq';done
+
+############
+filter_SNP_biallelic.py
+2_filter_ALL.py
+1_filter.py
+filter_space.py
+############
+
+#############
+#filter.py 
+import sys
+import os
+import time
+import subprocess
+import fileinput
+dir = os.getcwd()
+
+File1 = open(sys.argv[1],"r")
+#File2 = open(sys.argv[2],"r")
+
+readfile1 = File1.readlines()
+#readfile2 = File2.readlines()
+
+s=set()
+dict = {}
+
+for i in readfile1:
+	if 'INDEL' and '#' not in i:
+		j = i.split('\t')
+		line4 = str(j[0])
+		line5 = str(j[1])
+		line8 = str(line4+'XX,'+line5+'XX')
+		#s.add(line8)
+		#print line8
+		key = line8
+	        value = 'yes'
+	        dict[key] = value
+for i in fileinput.input(sys.argv[2]):
+	if '*' not in i and "+" not in i:
+		j = i.split('\t')
+		line4 = str(j[0])
+        	line5 = str(j[1])
+        	line8 = str(line4+'XX,'+line5+'XX')	   
+		if line8 in dict and dict[line8] == 'yes':
+			if float(j[8].count('.')+j[8].count(',')) == 0:
+				freq = 0
+			if float(j[8].count('.')+j[8].count(',')) > 0:
+				freq = float(j[8].count('.')+j[8].count(','))/float(j[7])
+			print j[0],j[1],j[2],j[3],j[7],j[8].count('.'),j[8].count(','),j[8].count('.')+j[8].count(','),freq,j[8],j[9][0:-1]
+###############
+
+
 
